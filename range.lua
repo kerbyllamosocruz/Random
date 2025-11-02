@@ -1,5 +1,5 @@
 getgenv().AutoHit = true
-getgenv().HitRange = 500
+getgenv().HitRange = 10000
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
