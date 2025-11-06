@@ -43,3 +43,24 @@ task.spawn(function()
 		end
 	end
 end)
+
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function setWalkSpeed(character)
+	local humanoid = character:WaitForChild("Humanoid")
+	humanoid.WalkSpeed = 80
+
+	humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+		if humanoid.WalkSpeed ~= 80 then
+			humanoid.WalkSpeed = 80
+		end
+	end)
+end
+
+player.CharacterAdded:Connect(setWalkSpeed)
+
+if player.Character then
+	setWalkSpeed(player.Character)
+end
