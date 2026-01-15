@@ -5,7 +5,7 @@ local Humanoid = Character:WaitForChild("Humanoid")
 local RootPart = Character:WaitForChild("HumanoidRootPart")
 
 -- CONFIGURATION
-local RANGE = 30        -- Size of the square area (from center to edge, so 100 means 200x200 area)
+local RANGE = 25        -- Size of the square area (from center to edge, so 100 means 200x200 area)
 local STEP_SIZE = 8      -- How many studs to move per step (smaller = precision, larger = speed)
 local WALK_SPEED = 500    -- Speed of walking
 local Y_OFFSET = 0       -- Keep at 0 to stay on ground
