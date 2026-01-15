@@ -1,67 +1,44 @@
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
+local TARGET_ID = "39a3c395-6b7f-4ef4-a000-860f45c06e42" -- From your first example
+local TARGET_ID_2 = "b360cebe-23ef-4bcf-a0dd-0780f8d13434" -- From your second example
 
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+print("--- SEARCHING FOR IDS ---")
+print("Scanning the whole game for these IDs...")
+print("1. " .. TARGET_ID)
+print("2. " .. TARGET_ID_2)
 
-local GUID_PATTERN = "{%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x}"
-
-print("--- ADVANCED DEBUG SCANNER STARTED ---")
-print("Walk near an item to scan for hidden IDs...")
-
-local inspected = {}
-
-local function ScanForGUIDs(obj, prefix)
-    -- Check Attributes
-    for name, value in pairs(obj:GetAttributes()) do
-        if type(value) == "string" and value:match(GUID_PATTERN) then
-            print(prefix .. "FOUND GUID IN ATTRIBUTE: [" .. name .. "] = " .. value)
+local function Scan(parent)
+    for _, child in ipairs(parent:GetChildren()) do
+        -- Check Name
+        if child.Name == TARGET_ID or child.Name == TARGET_ID_2 then
+            print("!!! FOUND IN NAME !!!")
+            print("Path: " .. child:GetFullName())
         end
-    end
-    
-    -- Check Children Values
-    for _, child in ipairs(obj:GetChildren()) do
-        if child:IsA("StringValue") and child.Value:match(GUID_PATTERN) then
-            print(prefix .. "FOUND GUID IN VALUE: [" .. child.Name .. "] = " .. child.Value)
-        elseif child:IsA("ObjectValue") then
-             print(prefix .. "Found ObjectValue: [" .. child.Name .. "] -> " .. (child.Value and child.Value.Name or "nil"))
-        end
-        -- Also check name of child
-        if child.Name:match(GUID_PATTERN) then
-             print(prefix .. "FOUND GUID IN CHILD NAME: " .. child.Name)
-        end
-    end
-end
 
-while true do
-    if HumanoidRootPart then
-        for _, item in ipairs(Workspace:GetChildren()) do -- Adjust if items are in a folder
-             -- Simple check for likely interactables
-            if item:IsA("Model") or (item:IsA("BasePart") and item:FindFirstChild("TouchInterest")) or item:FindFirstChild("ClickDetector") or item:GetAttribute("Interaction") then
-                 
-                local itemPos = nil
-                if item:IsA("BasePart") then itemPos = item.Position
-                elseif item:IsA("Model") and item.PrimaryPart then itemPos = item.PrimaryPart.Position
-                elseif item:FindFirstChild("HumanoidRootPart") then itemPos = item.HumanoidRootPart.Position
-                end
-
-                if itemPos then
-                    local distance = (HumanoidRootPart.Position - itemPos).Magnitude
-                    if distance < 15 and not inspected[item] then
-                        inspected[item] = true
-                        print(">>> INSPECTING: " .. item.Name .. " <<<")
-                        ScanForGUIDs(item, "  ")
-                        
-                        -- Deep scan specific children if needed
-                        if item:FindFirstChild("Configuration") then
-                             ScanForGUIDs(item.Configuration, "  [Config] ")
-                        end
-                        print("---------------------------------")
-                    end
-                end
+        -- Check Values
+        if child:IsA("StringValue") then
+            if child.Value == TARGET_ID or child.Value == TARGET_ID_2 then
+                print("!!! FOUND IN STRINGVALUE !!!")
+                print("Path: " .. child:GetFullName())
             end
         end
+
+        -- Check Attributes
+        local attrs = child:GetAttributes()
+        for k, v in pairs(attrs) do
+            if v == TARGET_ID or v == TARGET_ID_2 then
+                 print("!!! FOUND IN ATTRIBUTE !!!")
+                 print("Object: " .. child:GetFullName())
+                 print("Attribute: " .. k)
+            end
+        end
+
+        -- Recurse (avoid nil parents or locked services)
+        pcall(function()
+            Scan(child)
+        end)
     end
-    task.wait(0.5)
 end
+
+Scan(game:GetService("Workspace"))
+Scan(game:GetService("ReplicatedStorage"))
+print("--- SCAN COMPLETE ---")
