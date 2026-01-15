@@ -7,13 +7,29 @@ local RootPart = Character:WaitForChild("HumanoidRootPart")
 -- CONFIGURATION
 local RANGE = 50        -- Size of the square area (from center to edge, so 100 means 200x200 area)
 local STEP_SIZE = 8      -- How many studs to move per step (smaller = precision, larger = speed)
-local WALK_SPEED = 200    -- Speed of walking
+local WALK_SPEED = 500    -- Speed of walking
 local Y_OFFSET = 0       -- Keep at 0 to stay on ground
 local USE_TELEPORT = true -- Set to true to teleport instead of walk (riskier, faster)
 
-print("--- LAWNMOWER STARTED ---")
-print("Center set to current position within 3 seconds...")
-task.wait(3)
+local UserInputService = game:GetService("UserInputService")
+
+print("--- LAWNMOWER READY ---")
+print("1. Stand in the CENTER of the zone.")
+print("2. Press 'F' to START the script.")
+
+-- Wait for key press
+local started = false
+local connection
+connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.F then
+        started = true
+        connection:Disconnect() -- Stop listening
+    end
+end)
+
+repeat task.wait() until started
+
+print("STARTING NOW! Center set.")
 
 local CenterPosition = RootPart.Position
 Humanoid.WalkSpeed = WALK_SPEED
