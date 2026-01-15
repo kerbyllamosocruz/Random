@@ -7,7 +7,7 @@ local RootPart = Character:WaitForChild("HumanoidRootPart")
 -- CONFIGURATION
 local STEP_SIZE = 8       -- Gap between lines (smaller = more coverage)
 local WALK_SPEED = 150    -- Walking speed (User can increase this)
-local USE_TELEPORT = true -- Teleport instead of walking
+local USE_TELEPORT = false -- Teleport instead of walking
 
 -- HARDCODED CORNERS
 local corner1 = Vector3.new(-35.01, 98.03, 3909)
