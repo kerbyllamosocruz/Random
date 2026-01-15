@@ -1,5 +1,4 @@
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
@@ -7,65 +6,44 @@ local RootPart = Character:WaitForChild("HumanoidRootPart")
 
 -- CONFIGURATION
 local STEP_SIZE = 8       -- Gap between lines (smaller = more coverage)
-local WALK_SPEED = 500    -- Walking speed
-local USE_TELEPORT = true -- Teleport instead of walking
+local WALK_SPEED = 150       -- Walking speed (User can increase this)
+local USE_TELEPORT = false -- Teleport instead of walking
 
-print("--- AREA SELECTOR READY ---")
-print("1. Stand at CORNER 1 and press 'G'")
-print("2. Stand at CORNER 2 (Opposite) and press 'G'")
+-- HARDCODED CORNERS
+local corner1 = Vector3.new(-35.01, 98.03, 3909)
+local corner2 = Vector3.new(83.8672, 98.01, 4025.04)
 
-local corner1 = nil
-local corner2 = nil
-local ready = false
+print("--- AUTO FARM STARTED ---")
+print("Using Fixed Coordinates:")
+print("C1: " .. tostring(corner1))
+print("C2: " .. tostring(corner2))
 
--- Area Setup Loop
-local connection
-connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.G then
-        if not corner1 then
-            corner1 = RootPart.Position
-            print("CORNER 1 SET: " .. tostring(corner1))
-            
-            -- Visual Marker 1
-            local p = Instance.new("Part")
-            p.Size = Vector3.new(1, 40, 1)
-            p.Anchored = true
-            p.CanCollide = false
-            p.Color = Color3.fromRGB(255, 0, 0) -- Red
-            p.Transparency = 0.5
-            p.Position = corner1
-            p.Parent = workspace
-            
-            print("Now go to CORNER 2 and press 'G'")
-        elseif not corner2 then
-            corner2 = RootPart.Position
-            print("CORNER 2 SET: " .. tostring(corner2))
-            
-            -- Visual Marker 2
-            local p = Instance.new("Part")
-            p.Size = Vector3.new(1, 40, 1)
-            p.Anchored = true
-            p.CanCollide = false
-            p.Color = Color3.fromRGB(0, 0, 255) -- Blue
-            p.Transparency = 0.5
-            p.Position = corner2
-            p.Parent = workspace
-            
-            ready = true
-            connection:Disconnect()
-        end
-    end
-end)
+-- Visual Marker 1
+local p1 = Instance.new("Part")
+p1.Size = Vector3.new(1, 40, 1)
+p1.Anchored = true
+p1.CanCollide = false
+p1.Color = Color3.fromRGB(255, 0, 0) -- Red
+p1.Transparency = 0.5
+p1.Position = corner1
+p1.Parent = workspace
 
-repeat task.wait() until ready
-print("CALCULATING AREA...")
+-- Visual Marker 2
+local p2 = Instance.new("Part")
+p2.Size = Vector3.new(1, 40, 1)
+p2.Anchored = true
+p2.CanCollide = false
+p2.Color = Color3.fromRGB(0, 0, 255) -- Blue
+p2.Transparency = 0.5
+p2.Position = corner2
+p2.Parent = workspace
 
 -- Calculate Bounds
 local minX = math.min(corner1.X, corner2.X)
 local maxX = math.max(corner1.X, corner2.X)
 local minZ = math.min(corner1.Z, corner2.Z)
 local maxZ = math.max(corner1.Z, corner2.Z)
-local yLevel = corner1.Y -- Keep height consistent with first corner
+local yLevel = corner1.Y -- Keep height consistent
 
 Humanoid.WalkSpeed = WALK_SPEED
 
@@ -88,7 +66,7 @@ visual.Transparency = 0.5
 visual.Color = Color3.fromRGB(0, 255, 0) -- Green
 visual.Parent = workspace
 
-print("STARTING FARM...")
+print("STARTING LOOP...")
 
 -- Zig-Zag Loop within Bounds
 for x = minX, maxX, STEP_SIZE do
@@ -108,4 +86,6 @@ for x = minX, maxX, STEP_SIZE do
 end
 
 visual:Destroy()
+p1:Destroy()
+p2:Destroy()
 print("--- FARM FINISHED ---")
