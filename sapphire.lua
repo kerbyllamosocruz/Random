@@ -1,44 +1,59 @@
-local TARGET_ID = "39a3c395-6b7f-4ef4-a000-860f45c06e42" -- From your first example
-local TARGET_ID_2 = "b360cebe-23ef-4bcf-a0dd-0780f8d13434" -- From your second example
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local RootPart = Character:WaitForChild("HumanoidRootPart")
 
-print("--- SEARCHING FOR IDS ---")
-print("Scanning the whole game for these IDs...")
-print("1. " .. TARGET_ID)
-print("2. " .. TARGET_ID_2)
+-- CONFIGURATION
+local RANGE = 100        -- Size of the square area (from center to edge, so 100 means 200x200 area)
+local STEP_SIZE = 8      -- How many studs to move per step (smaller = precision, larger = speed)
+local WALK_SPEED = 200    -- Speed of walking
+local Y_OFFSET = 0       -- Keep at 0 to stay on ground
+local USE_TELEPORT = true -- Set to true to teleport instead of walk (riskier, faster)
 
-local function Scan(parent)
-    for _, child in ipairs(parent:GetChildren()) do
-        -- Check Name
-        if child.Name == TARGET_ID or child.Name == TARGET_ID_2 then
-            print("!!! FOUND IN NAME !!!")
-            print("Path: " .. child:GetFullName())
-        end
+print("--- LAWNMOWER STARTED ---")
+print("Center set to current position within 3 seconds...")
+task.wait(3)
 
-        -- Check Values
-        if child:IsA("StringValue") then
-            if child.Value == TARGET_ID or child.Value == TARGET_ID_2 then
-                print("!!! FOUND IN STRINGVALUE !!!")
-                print("Path: " .. child:GetFullName())
-            end
-        end
+local CenterPosition = RootPart.Position
+Humanoid.WalkSpeed = WALK_SPEED
 
-        -- Check Attributes
-        local attrs = child:GetAttributes()
-        for k, v in pairs(attrs) do
-            if v == TARGET_ID or v == TARGET_ID_2 then
-                 print("!!! FOUND IN ATTRIBUTE !!!")
-                 print("Object: " .. child:GetFullName())
-                 print("Attribute: " .. k)
-            end
-        end
-
-        -- Recurse (avoid nil parents or locked services)
-        pcall(function()
-            Scan(child)
-        end)
+local function MoveTo(targetPos)
+    if USE_TELEPORT then
+        RootPart.CFrame = CFrame.new(targetPos)
+        task.wait(0.1) -- Small delay to register touch
+    else
+        Humanoid:MoveTo(targetPos)
+        -- Wait until we reach the point or get stuck (timeout 3s)
+        local reached = Humanoid.MoveToFinished:Wait()
     end
 end
 
-Scan(game:GetService("Workspace"))
-Scan(game:GetService("ReplicatedStorage"))
-print("--- SCAN COMPLETE ---")
+-- Create a visual marker (client-side only)
+local visual = Instance.new("Part")
+visual.Size = Vector3.new(1, 40, 1)
+visual.Anchored = true
+visual.CanCollide = false
+visual.Transparency = 0.5
+visual.Color = Color3.fromRGB(0, 255, 0)
+visual.Parent = workspace
+
+-- Zig-Zag Pattern
+for x = -RANGE, RANGE, STEP_SIZE do
+    -- Flip direction every row for efficiency (S-shape)
+    local zStart, zEnd, zStep = -RANGE, RANGE, STEP_SIZE
+    if (x / STEP_SIZE) % 2 ~= 0 then 
+        zStart, zEnd, zStep = RANGE, -RANGE, -STEP_SIZE 
+    end
+
+    for z = zStart, zEnd, zStep do
+        if not Character or not Character.Parent or Humanoid.Health <= 0 then break end
+        
+        local target = CenterPosition + Vector3.new(x, Y_OFFSET, z)
+        visual.Position = target
+        MoveTo(target)
+    end
+end
+
+visual:Destroy()
+print("--- COLLECTION FINISHED ---")
